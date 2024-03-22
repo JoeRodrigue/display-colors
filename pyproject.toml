@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "display-colors"
+version = "0.1.0"
+description = "Displays 4-bit terminal colors in different combinations"
+authors = ["Joe Rodrigue <joe.rodrigue@gmail.com>"]
+readme = "README.md"
+packages = [{include = "display_colors", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
