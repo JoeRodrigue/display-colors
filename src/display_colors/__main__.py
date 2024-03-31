@@ -13,12 +13,15 @@ from typing          import Callable
 
 ANSI_BEG  = '\033['
 ANSI_END  = 'm'
-BOLD      = 1
+RESET     = 0
 DIM       = 2
 MEDIUM    = 22
-RESET     = 0
+ITALIC    = 3
+BOLD      = 1
 REV_VIDEO = 7
 UNDERLINE = 4
+
+CODE_COL_WIDTH = 8       ## Widest attr code is '22;97;7m'
 
 FG_COLOR_OFFSET         = 30
 BG_COLOR_OFFSET         = 40
@@ -27,14 +30,14 @@ DEFAULT_BG_COLOR_OFFSET = 49
 BRIGHT_FG_COLOR_OFFSET  = 90
 BRIGHT_BG_COLOR_OFFSET  = 100
 
-ALL_INTENSITIES = (
+ALL_WEIGHTS = (
 	'Dim',
 	'Default',
 	'Medium',
 	'Bold',
 )
 
-STANDARD_INTENSITIES = (
+STANDARD_WEIGHTS = (
 	'Default',
 	'Bold',
 )
@@ -79,67 +82,22 @@ COLOR_REPR = {
 BG_REPR_ATTR = dict()
 FG_REPR_ATTR = dict()
 
+def cat_gens(*gens: list[Generator[str, str, str]]) -> Generator[str, str, str]:
+	for gen in gens:
+		yield from gen
+
 def color_gen(colors: tuple[str], modifier: Callable) -> Generator[str, str, str]:
 	for color in colors:
 		yield modifier(COLOR_REPR[color])
 
-def cat_gens(*gens: list[Generator[int, int, int]]) -> Generator[int, int, int]:
-	for gen in gens:
-		yield from gen
-
-def print_all_combinations(intensities: list[str], l_col_w: int, cell_w: int, reverse_video: bool, gutter: str) -> None:
-	display_top_headers(l_col_w, cell_w, gutter)
-
-def print_all_combinations_old(intensity_attr: int, reverse_video: bool, gutter: str) -> None:
-	for bg_repr in cat_gens(color_gen(('default',), str.lower),
-														  color_gen(COLORS,       str.lower),
-															color_gen(COLORS,       str.upper),
-														 ):
-		for rev_video in (False, True) if reverse_video else (False,):
-			display_left_header()
-			for fg_repr in cat_gens(color_gen(('default',), str.lower),
-																	color_gen(COLORS,       str.lower),
-																	color_gen(COLORS,       str.upper),
-																):
-				print_cell(fg_repr, bg_repr, intensity_attr, rev_video, gutter)
-			print()
-
-def print_cell(fg_repr: str, bg_repr: str, intensity_attr: int, rev_video: bool, gutter: str) -> None:
+def create_attrs(weight: str, fg_repr: str, bg_repr: str, rev_video: bool) -> str:
 	(fg, bg) = (bg_repr, fg_repr) if rev_video else (fg_repr, bg_repr)
-	attrs    = f'{intensity_attr};{FG_REPR_ATTR[fg]};{BG_REPR_ATTR[bg]}' + (f';{REV_VIDEO}' if rev_video else '')
-	str      = f'{fg_repr}/{bg_repr}'
-	cell_w   = len(str) + 2
-	print(f'{ANSI_BEG}{attrs}{ANSI_END}{str:^{cell_w}}{ANSI_BEG}{RESET}{ANSI_END}', end = gutter)
+	return f'{INTENSITY_ATTR[weight]};{FG_REPR_ATTR[fg]};{BG_REPR_ATTR[bg]}' + (f';{REV_VIDEO}' if rev_video else '')
 
-def create_attrs(intensity: str, fg_repr: str, bg_repr: str, rev_video: bool) -> str:
-	(fg, bg) = (bg_repr, fg_repr) if rev_video else (fg_repr, bg_repr)
-	return f'{INTENSITY_ATTR[intensity]};{FG_REPR_ATTR[fg]};{BG_REPR_ATTR[bg]}' + (f';{REV_VIDEO}' if rev_video else '')
-
-def display_top_headers(l_col_w: int, cell_w: int, gutter: str) -> None:
-	attrs = create_attrs('Default', 'df', 'df', False)
-	text  = cell_text(text = '', cell_w = l_col_w)
-	display_cell(attrs, text, ' ')
-	for bg_repr in cat_gens(color_gen(('default',), str.lower),
-															color_gen(COLORS,       str.lower),
-															color_gen(COLORS,       str.upper),
-															):
-		txt  = f'{BG_REPR_ATTR[bg_repr]}m'
-		text = cell_text(text = txt, cell_w = cell_w)
-		display_cell(attrs, text, gutter)
-	print()
-
-def fg_attr_repr(intensity: str, fg_repr: str, rev_video: bool, cell_w: int) -> str:
+def fg_attr_repr(weight: str, fg_repr: str, rev_video: bool, cell_w: int) -> str:
 	rv_attr = f';{REV_VIDEO}' if rev_video else ''
-	str     = f'{INTENSITY_ATTR[intensity]};{FG_REPR_ATTR[fg_repr]}{rv_attr}m'
+	str     = f'{INTENSITY_ATTR[weight]};{FG_REPR_ATTR[fg_repr]}{rv_attr}m'
 	return f'{str:>{cell_w}}'
-
-def display_left_header(intensity: str, ground_attr: int, rev_video: bool, l_col_w: int) -> None:
-	attrs = create_attrs('Default', 'df', 'df', rev_video)
-	text  = f'{INTENSITY_REPR[intensity]}'
-	display_cell(attrs, text, ' ')
-	attrs = create_attrs('Default', 'df', 'df', False)
-	text  = fg_attr_repr(intensity, ground_attr, rev_video, l_col_w)
-	display_cell(attrs, text, ' ')
 
 def colored_cell(attrs: int, text: str) -> str:
 	return f'{ANSI_BEG}{attrs}{ANSI_END}{text}{ANSI_BEG}{RESET}{ANSI_END}'
@@ -147,31 +105,7 @@ def colored_cell(attrs: int, text: str) -> str:
 def blank_cell(cell_w: int) -> str:
 	return colored_cell(create_attrs('Default', 'df', 'df', False), f'{"":{cell_w}}')
 
-def intensity_col_gen(intensities: list[str], reverse_video: bool) -> Generator[str, str, str]:
-	yield blank_cell(len(INTENSITY_REPR['Default']))
-	for _ in cat_gens(color_gen(('default',), str.lower),
-										color_gen(COLORS,       str.lower),
-										color_gen(COLORS,       str.upper),
-										):
-		for intensity in intensities:
-			for rev_video in (False, True) if reverse_video else (False,):
-				attrs = create_attrs('Default', 'df', 'df', rev_video)
-				text  = f'{INTENSITY_REPR[intensity]}'
-				yield colored_cell(attrs, text)
-
-def code_col_gen(intensities: list[str], reverse_video: bool, cell_w: int) -> Generator[str, str, str]:
-	yield blank_cell(cell_w)
-	for fg_repr in cat_gens(color_gen(('default',), str.lower),
-													color_gen(COLORS,       str.lower),
-													color_gen(COLORS,       str.upper),
-													):
-		for intensity in intensities:
-			for rev_video in (False, True) if reverse_video else (False,):
-				attrs = create_attrs('Default', 'df', 'df', False)
-				text  = fg_attr_repr(intensity, fg_repr, rev_video, cell_w)
-				yield colored_cell(attrs, text)
-
-def fg_col_gen(intensities: list[str], reverse_video: bool) -> Generator[str, str, str]:
+def fg_col_gen(weights: list[str], reverse_video: bool, stanzas: bool) -> Generator[str, str, str]:
 	col_w = len(COLOR_REPR['default'])
 	yield blank_cell(col_w)
 	prefix = f''
@@ -180,21 +114,69 @@ def fg_col_gen(intensities: list[str], reverse_video: bool) -> Generator[str, st
 													color_gen(COLORS,       str.upper),
 													):
 		new_stanza = True
-		for _ in intensities:
+		for _ in weights:
 			for _ in (False, True) if reverse_video else (False,):
 				attrs = create_attrs('Default', 'df', 'df', False)
 				text = f'{prefix}{fg_repr}'
 				yield colored_cell(attrs, text) if new_stanza else blank_cell(col_w)
 				new_stanza = False
-		prefix = f'\n'
+		prefix = f'\n' if stanzas else f''
 
-def display_theme(intensities: list[str], reverse_video: bool, code_col_w: int, cell_txt: str, cell_w: int, gutter: str) -> None:
+def weight_col_gen(weights: list[str], reverse_video: bool, header: bool = False) -> Generator[str, str, str]:
+	if header:
+		yield blank_cell(len(INTENSITY_REPR['Default']))
+	for _ in cat_gens(color_gen(('default',), str.lower),
+										color_gen(COLORS,       str.lower),
+										color_gen(COLORS,       str.upper),
+										):
+		for weight in weights:
+			for rev_video in (False, True) if reverse_video else (False,):
+				attrs = create_attrs('Default', 'df', 'df', rev_video)
+				text  = f'{INTENSITY_REPR[weight]}'
+				yield colored_cell(attrs, text)
+
+def code_col_gen(weights: list[str], reverse_video: bool, col_w: int) -> Generator[str, str, str]:
+	yield blank_cell(col_w)
+	for fg_repr in cat_gens(color_gen(('default',), str.lower),
+													color_gen(COLORS,       str.lower),
+													color_gen(COLORS,       str.upper),
+													):
+		for weight in weights:
+			for rev_video in (False, True) if reverse_video else (False,):
+				attrs = create_attrs('Default', 'df', 'df', False)
+				text  = fg_attr_repr(weight, fg_repr, rev_video, col_w)
+				yield colored_cell(attrs, text)
+
+def cell_text(fg_repr: str = '', bg_repr: str = '', text: str = '', transpose: bool = False, cell_w: int = 0) -> str:
+	str = f'{fg_repr}/{bg_repr}' if transpose else text
+	w   = cell_w or len(str) + 2
+	return f'{str:^{w}}'
+
+def column_gen(bg_repr: str, weights: list[str], reverse_video: bool, cell_txt: str, col_w: int, transpose: bool) -> Generator[str, str, str]:
+	if not transpose:
+		attrs = create_attrs('Default', 'df', 'df', False)
+		text  = cell_text(text = f'{BG_REPR_ATTR[bg_repr]}m', cell_w = col_w)
+		yield colored_cell(attrs, text)
+	for fg_repr in cat_gens(color_gen(('default',), str.lower),
+													color_gen(COLORS,       str.lower),
+													color_gen(COLORS,       str.upper),
+													):
+		(fg, bg) = (bg_repr, fg_repr) if transpose else (fg_repr, bg_repr)
+		for weight in weights:
+			for rev_video in (False, True) if reverse_video else (False,):
+				attrs = create_attrs(weight, fg, bg, rev_video)
+				text  = cell_text(fg_repr = fg, bg_repr = bg, text = cell_txt, transpose = transpose, cell_w = col_w)
+				yield colored_cell(attrs, text)
+
+def display_theme(weights: list[str], reverse_video: bool, cell_txt: str, col_w: int, gutter: str, stanzas: bool, transpose: bool) -> None:
 	headers = [
-		fg_col_gen       (intensities, reverse_video),
-		intensity_col_gen(intensities, reverse_video),
-		code_col_gen     (intensities, reverse_video, code_col_w),
+		weight_col_gen(weights, reverse_video),
+	] if transpose else [
+		fg_col_gen    (weights, reverse_video, stanzas),
+		weight_col_gen(weights, reverse_video, header = True),
+		code_col_gen  (weights, reverse_video, CODE_COL_WIDTH),
 	]
-	cols = [column_gen(bg_repr, intensities, reverse_video, cell_txt, cell_w)
+	cols = [column_gen(bg_repr, weights, reverse_video, cell_txt, col_w, transpose)
 				 for bg_repr in cat_gens(
 					 color_gen(('default',), str.lower),
 					 color_gen(COLORS,       str.lower),
@@ -209,50 +191,6 @@ def display_theme(intensities: list[str], reverse_video: bool, code_col_w: int, 
 			print()
 		except StopIteration:
 			break
-
-def column_gen(bg_repr: str, intensities: list[str], reverse_video: bool, cell_txt: str, col_w: int) -> Generator[str, str, str]:
-	attrs = create_attrs('Default', 'df', 'df', False)
-	text  = cell_text(text = f'{BG_REPR_ATTR[bg_repr]}m', cell_w = col_w)
-	yield colored_cell(attrs, text)
-	for fg_repr in cat_gens(color_gen(('default',), str.lower),
-													color_gen(COLORS,       str.lower),
-													color_gen(COLORS,       str.upper),
-													):
-		for intensity in intensities:
-			for rev_video in (False, True) if reverse_video else (False,):
-				attrs = create_attrs(intensity, fg_repr, bg_repr, rev_video)
-				text  = cell_text(text = cell_txt, cell_w = col_w)
-				yield colored_cell(attrs, text)
-
-def display_theme_old(intensities: list[str], reverse_video: bool, l_col_w: int, cell_txt: str, cell_w: int, gutter: str) -> None:
-	display_top_headers(l_col_w + 4, cell_w, gutter)
-	for fg_repr in cat_gens(color_gen(('default',), str.lower),
-														  color_gen(COLORS,       str.lower),
-															color_gen(COLORS,       str.upper),
-														 ):
-		for intensity in intensities:
-			for rev_video in (False, True) if reverse_video else (False,):
-				display_left_header(intensity, FG_REPR_ATTR[fg_repr], rev_video, l_col_w)
-				for bg_repr in cat_gens(color_gen(('default',), str.lower),
-																		color_gen(COLORS,       str.lower),
-																		color_gen(COLORS,       str.upper),
-																	):
-					attrs = create_attrs(intensity, fg_repr, bg_repr, rev_video)
-					text = cell_text(text = cell_txt, cell_w = cell_w)
-					display_cell(attrs, text, gutter)
-				print()
-		print()
-
-def cell_text_theme(fg_repr: str, bg_repr: str) -> str:
-	return cell_text(f'{fg_repr}/{bg_repr}')
-
-def cell_text(fg_repr: str = '', bg_repr: str = '', text: str = '', cell_w: int = 0) -> str:
-	str = f'{fg_repr}/{bg_repr}' if fg_repr else text
-	w   = cell_w or len(str) + 2
-	return f'{str:^{cell_w}}'
-
-def display_cell(attrs: str, text: str, gutter: str) -> None:
-	print(f'{ANSI_BEG}{attrs}{ANSI_END}{text}{ANSI_BEG}{RESET}{ANSI_END}', end = gutter)
 
 def init_mappings() -> None:
 	def init_mapping(target: dict[str, int], colors: tuple[str], offset: int, modifier: Callable) -> None:
@@ -270,22 +208,18 @@ def init_mappings() -> None:
 		init_mapping(target, colors, offset, modifier)
 
 @click.command()
-@click.option('--standard',                         '_standard',   is_flag = True,  help = "Print the standard theme format", default = False, show_default = True)
-@click.option('--complete',                         '_complete',   is_flag = True,  help = "Print the complete theme format", default = False, show_default = True)
-@click.option('--intensities',                      '_intensities',   type = click.Choice(['standard', 'all'], case_sensitive = False),  help = "(default, bold) or (dim, default, medium, bold)", default = 'standard', show_default = True)
-@click.option('--reverse-video/--no-reverse-video', '_reverse_video', type = bool, help = "Add 'background-color on foreground-color' in reverse video",   default = False,      show_default = True)
-@click.option('--standard-cell-width',              '_scell_w',       type = int,  help = "Cell width in standard display",                                default = 7,          show_default = True)
-@click.option('--complete-padding',                 '_cpadding',      type = int,  help = "Padding around cell text in complete display",                  default = 2,          show_default = True)
-@click.option('--gutter',                           '_gutter',        type = str,  help = "String delimiting output columns",                              default = '',         show_default = True)
-@click.option('--text',                             '_text',          type = str,  help = "Sample text in each cell",                                      default = 'gYw',      show_default = True)
+@click.option('--col-width',     '_col_w',        type = int,  help = "Column width",                                                  default = 7,     show_default = True)
+@click.option('--gutter',        '_gutter',       type = str,  help = "String delimiting output columns  [default: empty string]",     default = '',    show_default = True)
+@click.option('--reverse-video', '_rev_video', is_flag = True, help = "Add 'background-color on foreground-color' in reverse video",   default = False, show_default = True)
+@click.option('--stanzas',       '_stanzas',   is_flag = True, help = "Group output rows by color (non-transposed only)",              default = False, show_default = True)
+@click.option('--text',          '_text',         type = str,  help = "Sample text in each cell (non-transposed only)",                default = 'gYw', show_default = True)
+@click.option('--transpose',     '_transpose', is_flag = True, help = "Display foreground colors in column-major order  [default: row-major order]", default = False, show_default = True)
 @click.version_option(package_name = 'display-colors')
-def main(_standard: bool, _complete: bool, _intensities: str, _reverse_video: bool, _scell_w: int, _cpadding: int, _gutter: str, _text: str) -> None:
+@click.option('--weight', '-w',  '_weights',      type = click.Choice(['dim', 'default', 'medium', 'bold', 'all'], case_sensitive = False), multiple = True, help = "Which weight font to display (use multiple times)", default = ['default', 'bold'], show_default = True)
+def main(_transpose: bool, _weights: list[str], _rev_video: bool, _col_w: int, _gutter: str, _stanzas: bool, _text: str) -> None:
 	init_mappings()
-	intensities = STANDARD_INTENSITIES if _intensities == 'standard' else ALL_INTENSITIES
-	if _complete:
-		print_all_combinations(intensities, 8, len('XX/XX') + _cpadding, _reverse_video, _gutter)
-	if _standard:
-		display_theme(intensities, _reverse_video, 8, _text, cell_w = _scell_w, gutter = _gutter)
+	weights = ALL_WEIGHTS if 'all' in _weights else [w.capitalize() for w in _weights]
+	display_theme(weights, _rev_video, _text, col_w = _col_w, gutter = _gutter, stanzas = _stanzas, transpose = _transpose)
 
 if __name__ == '__main__':
 	main()
@@ -388,4 +322,97 @@ if __name__ == '__main__':
 # def cell_text_old(str: str) -> str:
 # 	cell_w = len(str) + 2
 # 	return f'{str:^{cell_w}}'
+
+# def print_all_combinations(intensities: list[str], l_col_w: int, cell_w: int, reverse_video: bool, gutter: str) -> None:
+# 	display_top_headers(l_col_w, cell_w, gutter)
+
+# def print_all_combinations_old(intensity_attr: int, reverse_video: bool, gutter: str) -> None:
+# 	for bg_repr in cat_gens(color_gen(('default',), str.lower),
+# 														  color_gen(COLORS,       str.lower),
+# 															color_gen(COLORS,       str.upper),
+# 														 ):
+# 		for rev_video in (False, True) if reverse_video else (False,):
+# 			display_left_header()
+# 			for fg_repr in cat_gens(color_gen(('default',), str.lower),
+# 																	color_gen(COLORS,       str.lower),
+# 																	color_gen(COLORS,       str.upper),
+# 																):
+# 				print_cell(fg_repr, bg_repr, intensity_attr, rev_video, gutter)
+# 			print()
+
+# def print_cell(fg_repr: str, bg_repr: str, intensity_attr: int, rev_video: bool, gutter: str) -> None:
+# 	(fg, bg) = (bg_repr, fg_repr) if rev_video else (fg_repr, bg_repr)
+# 	attrs    = f'{intensity_attr};{FG_REPR_ATTR[fg]};{BG_REPR_ATTR[bg]}' + (f';{REV_VIDEO}' if rev_video else '')
+# 	str      = f'{fg_repr}/{bg_repr}'
+# 	cell_w   = len(str) + 2
+# 	print(f'{ANSI_BEG}{attrs}{ANSI_END}{str:^{cell_w}}{ANSI_BEG}{RESET}{ANSI_END}', end = gutter)
+
+# def display_top_headers(l_col_w: int, cell_w: int, gutter: str) -> None:
+# 	attrs = create_attrs('Default', 'df', 'df', False)
+# 	text  = cell_text(text = '', cell_w = l_col_w)
+# 	display_cell(attrs, text, ' ')
+# 	for bg_repr in cat_gens(color_gen(('default',), str.lower),
+# 															color_gen(COLORS,       str.lower),
+# 															color_gen(COLORS,       str.upper),
+# 															):
+# 		txt  = f'{BG_REPR_ATTR[bg_repr]}m'
+# 		text = cell_text(text = txt, cell_w = cell_w)
+# 		display_cell(attrs, text, gutter)
+# 	print()
+
+# def display_left_header(intensity: str, ground_attr: int, rev_video: bool, l_col_w: int) -> None:
+# 	attrs = create_attrs('Default', 'df', 'df', rev_video)
+# 	text  = f'{INTENSITY_REPR[intensity]}'
+# 	display_cell(attrs, text, ' ')
+# 	attrs = create_attrs('Default', 'df', 'df', False)
+# 	text  = fg_attr_repr(intensity, ground_attr, rev_video, l_col_w)
+# 	display_cell(attrs, text, ' ')
+
+# def display_fg_by_bg(intensities: list[str], reverse_video: bool, code_col_w: int, cell_txt: str, cell_w: int, gutter: str, stanzas: bool) -> None:
+# 	headers = [
+# 		intensity_col_gen(intensities, reverse_video),
+# 	]
+# 	cols = [
+
+# 	]
+# 	while True:
+# 		try:
+# 			for col in headers:
+# 				print(next(col), end = ' ')
+# 			for col in cols:
+# 				print(next(col), end = gutter)
+# 			print()
+# 		except StopIteration:
+# 			break
+
+# def display_theme_old(intensities: list[str], reverse_video: bool, l_col_w: int, cell_txt: str, cell_w: int, gutter: str) -> None:
+# 	display_top_headers(l_col_w + 4, cell_w, gutter)
+# 	for fg_repr in cat_gens(color_gen(('default',), str.lower),
+# 														  color_gen(COLORS,       str.lower),
+# 															color_gen(COLORS,       str.upper),
+# 														 ):
+# 		for intensity in intensities:
+# 			for rev_video in (False, True) if reverse_video else (False,):
+# 				display_left_header(intensity, FG_REPR_ATTR[fg_repr], rev_video, l_col_w)
+# 				for bg_repr in cat_gens(color_gen(('default',), str.lower),
+# 																		color_gen(COLORS,       str.lower),
+# 																		color_gen(COLORS,       str.upper),
+# 																	):
+# 					attrs = create_attrs(intensity, fg_repr, bg_repr, rev_video)
+# 					text = cell_text(text = cell_txt, cell_w = cell_w)
+# 					display_cell(attrs, text, gutter)
+# 				print()
+# 		print()
+
+# def cell_text_theme(fg_repr: str, bg_repr: str) -> str:
+# 	return cell_text(f'{fg_repr}/{bg_repr}')
+
+	# if _complete:
+	# 	display_fg_by_bg(intensities, _rev_video, 8, _text, _cell_w, _gutter, _stanzas)
+	# 	# print_all_combinations(intensities, 8, len('XX/XX') + _cpadding, _rev_video, _gutter)
+	# if _standard:
+	# 	display_theme(intensities, _rev_video, 8, _text, cell_w = _cell_w, gutter = _gutter, stanzas = _stanzas, transpose = transpose)
+
+# def display_cell(attrs: str, text: str, gutter: str) -> None:
+# 	print(f'{ANSI_BEG}{attrs}{ANSI_END}{text}{ANSI_BEG}{RESET}{ANSI_END}', end = gutter)
 

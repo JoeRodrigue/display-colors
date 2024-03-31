@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "display-colors"
-version = "0.2.0"
+version = "0.3.0"
 description = "Displays 4-bit terminal colors in different combinations"
 authors     = ["Joe Rodrigue <joe.rodrigue@gmail.com>"]
 maintainers = ["Joe Rodrigue <joe.rodrigue@gmail.com>"]
