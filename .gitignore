@@ -1,9 +1,11 @@
 *~
 *.log
+*.pyc
 .coverage
-.venv
-.vscode
-__pycache__
+.venv/
+.vscode/
+__pycache__/
 build/
 dist/
+*.egg-info/
 .junk/

@@ -1,10 +1,22 @@
 [tool.poetry]
 name = "display-colors"
-version = "0.4.0"
-description = "Displays 4-bit terminal colors in different combinations"
+version = "0.4.1"
+description = "Shows the 4-bit color and display effect capabilities of a terminal emulator"
 authors     = ["Joe Rodrigue <joe.rodrigue@gmail.com>"]
 maintainers = ["Joe Rodrigue <joe.rodrigue@gmail.com>"]
+repository  = "https://github.com/JoeRodrigue/display-colors"
 readme = "README.md"
+classifiers = [
+	"License :: OSI Approved :: Apache Software License",
+	"Operating System :: OS Independent",
+	"Programming Language :: Python :: 3.7",
+	"Programming Language :: Python :: 3.8",
+	"Programming Language :: Python :: 3.9",
+	"Programming Language :: Python :: 3.10",
+	"Programming Language :: Python :: 3.11",
+	"Programming Language :: Python :: 3.12",
+]
+keywords = ['color', 'terminal', 'emulator', 'SGR', 'ECMA-48']
 packages = [{include = "display_colors", from = "src"}]
 
 [tool.poetry.dependencies]
