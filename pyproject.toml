@@ -5,7 +5,7 @@ description = "Shows the 4-bit color and display effect capabilities of a termin
 authors     = ["Joe Rodrigue <joe.rodrigue@gmail.com>"]
 maintainers = ["Joe Rodrigue <joe.rodrigue@gmail.com>"]
 repository  = "https://github.com/JoeRodrigue/display-colors"
-readme = "README.md"
+readme      = "README.md"
 classifiers = [
 	"License :: OSI Approved :: Apache Software License",
 	"Operating System :: OS Independent",
