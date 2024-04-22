@@ -4,7 +4,7 @@
 
 ## Compatibility
 
-At present `display-colors` only runs on macOS.
+`display-colors` runs on macOS and Linux.
 It requires Python 3.
 
 ## Installation and Use
