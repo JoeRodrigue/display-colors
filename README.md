@@ -52,7 +52,7 @@ Options:
  - `--gutter` *`string`* -- Delimiter between output columns (default: empty string)
  - `--reverse-video` -- Repeats each row using BG-color on FG-color in reverse video.  Some terminal emulators don't implement reverse video as BG-color on FG-color.  If yours does, this transformation is a no-op and this row should appear identical to the row above it
  - `--stanzas` -- Group output rows by color (default: off)
- - `--text` *`string`* -- Specifies the sample text to be displayed in each cell (default: `gYw`)
+ - `--text` *`string`* -- Specifies the sample text to be displayed in each cell (default: 'gYw')
  - `-w` *`string`*, `--weight` *`string`* -- Specifies which weight font to display and in what order (use multiple times).  Supported weights are `dim`, `default`, `medium`, `bold` and `all` (default: `default`, `bold`)
 
 This format lists background colors one per column with their SGR codes at top and left.  The default background color is the leftmost column and the topmost rows show the default foreground color.
