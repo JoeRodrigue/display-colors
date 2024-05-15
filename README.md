@@ -36,15 +36,17 @@ rm -rf .venv                 // Destroy .venv
 
 ## Features
 
-`display-colors` produces test patterns that show the capabilities of your terminal emulator.  They include each combination of foreground and background four-bit colors, which can vary depending on the theme (some themes barely support the bright variants of the eight basic colors, which are not included in the original ECMA-48 standard).  The program also demonstrates each Select Graphic Rendition (SGR) code controlling effects like underline and blink.  Support for these among emulators is spotty.
+There are three color modes used by modern terminal emulators (but not all may be supported): 4-bit, 8-bit and 24-bit.
+`display-colors` produces test patterns that show the 4-bit and 8-bit capabilities of a terminal emulator.  They include each combination of foreground and background 4-bit colors, which can vary depending on the theme (some themes barely support the bright variants of the eight basic colors, which are not included in the original ECMA-48 standard).  The program also demonstrates each Select Graphic Rendition (SGR) code controlling effects like underline and blink.  Support for these among emulators is spotty.
 
-It has three modes:
+The program has four modes:
 
- - Standard -- A color palette in the traditional format (*qv* [iTerm2 Color Schemes](https://iterm2colorschemes.com/))
- - Transpose -- A palette with one foreground color per column
+ - 4-bit -- A color palette in the traditional format, one background color per column (*qv* [iTerm2 Color Schemes](https://iterm2colorschemes.com/))
+ - 4-bit transpose -- A palette with one foreground color per column
+ - 8-bit -- A palette of background colors, including the standard 16 and grayscale (*qv* [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit))
  - Test -- A test pattern of terminal effects
 
-### Standard mode (default)
+### 4-bit mode (default)
 
 Options:
 
@@ -59,7 +61,7 @@ This format lists background colors one per column with their SGR codes at top a
 
 Each row is labeled on the left with its weight.  If the row is reverse video, the weight label will appear in reverse video.
 
-### Transpose mode (`--transpose`)
+### 4-bit transpose (`--transpose`)
 
 Options:
 
@@ -69,6 +71,24 @@ Options:
  - `-w` *`string`*, `--weight` *`string`* -- (see 'Standard mode' above)
 
 This format lists foreground colors one per column, with the default foreground color in the leftmost column and the default background color in the topmost rows.  The SGR codes are not shown and the sample text is of the form fg/bg.
+
+### 8-bit
+
+This has three parts:
+
+ - 16 standard and bright colors
+ - The palette of 216 RGB colors
+ - 24 grayscale colors
+
+These are displayed as background colors.  The text in each cell is the hexadecimal value of the color code; for example, the background color of cell D8 in the test pattern is given by the ANSI escape code `\033[48;5;216m`.  The foreground colors in the test pattern are (standard) white for the darker cells and black for the lighter ones.  Some terminal emulators modify this in an attempt to improve the contrast.
+
+The text in the cells is in hexadecimal by default because it is more readable and to save space.
+
+The sixteen standard colors are presented beside their 4-bit equivalents (sometimes these are different).
+
+The 216 RGB colors are arranged in a 6x6 cube, displayed in 6 slices with the origin at the back upper left corner.  We assign codes to them in xyz order, with the x coordinate varying first.  The x coordinate moves left to right, the y coordinate top to bottom and the z coordinate back to front.  The display shows three views of the cube, one per row: head-on sliced back to front, from above sliced top to bottom and from the left sliced left to right.  (The view in the [ANSI escape code illustration](https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit) is the second of these views).
+
+From these slices you can see that the darker cells occupy the top half of the cube, the greens the back lower left corner, the reds the front upper left corner and the blues the back upper right corner.
 
 ### Test mode (`--test`)
 
@@ -113,20 +133,19 @@ The display uses abbreviations for the colors, as follows:
 
 ## Examples
 
-Traditional palette, including all font weights, with reverse-video rows, divided into stanzas by color:
-
+Traditional 4-bit palette, including all font weights, with reverse-video rows, divided into stanzas by color:
 ```bash
 display-colors --weight all --reverse-video --stanzas
 ```
-
-Palette with one column per foreground color, rows ordered 'dim, medium, bold, medium' and spaces between the columns:
-
+4-bit palette with one column per foreground color, rows ordered 'dim, medium, bold, medium' and spaces between the columns:
 ```bash
 display-colors --transpose -w dim -w medium -w bold -w medium --gutter ' '
 ```
-
+8-bit display including standard and bright colors, 216-color RGB palette and grayscale background colors:
+```bash
+display-colors --8-bit
+```
 Terminal effect test pattern with spaces between the columns:
-
 ```bash
 display-colors --test --gutter ' '
 ```

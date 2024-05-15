@@ -277,6 +277,7 @@ def eight_bit(col_w: int) -> None:
 					 color_gen(COLORS,       str.lower),
 					 color_gen(COLORS,       str.upper),
 				 ))]
+	print('Standard and bright colors:')
 	while True:
 		try:
 			for col in headers:
@@ -286,11 +287,13 @@ def eight_bit(col_w: int) -> None:
 			print()
 		except StopIteration:
 			break
-	print()
+	print('RGB palette cube, front:')
 	eight_bit_palette(3, 'xyz')
+	print('Top:')
 	eight_bit_palette(3, 'xzy')
+	print('Left side:')
 	eight_bit_palette(3, 'zyx')
-	print()
+	print('Grayscale:')
 	eight_bit_grayscale(5)
 
 def display_theme(weights: list[str], reverse_video: bool, cell_txt: str, col_w: int, gutter: str, stanzas: bool, transpose: bool) -> None:
