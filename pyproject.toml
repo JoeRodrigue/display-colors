@@ -24,7 +24,7 @@ python = "^3.7"
 click = "^8.1.7"
 
 [tool.poetry.scripts]
-	display-colors = 'display_colors.__main__:main'
+	display-colors = 'display_colors.__main__:cli'
 
 [build-system]
 requires = ["poetry-core"]

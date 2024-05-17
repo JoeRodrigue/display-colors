@@ -22,35 +22,57 @@
 # limitations under the License.
 
 import click
-from collections     import namedtuple
 from collections.abc import Generator
 from typing          import Callable
 
-SGR_BEG   = '\033['
-SGR_END   = 'm'
-RESET     = 0
-DIM       = 2
-MEDIUM    = 22
-ITALIC    = 3
-BOLD      = 1
-REV_VIDEO = 7
-UNDERLINE = 4
+from display_colors.const   import (
+	ALL_WEIGHTS,
+	CODE_COL_WIDTH,
+	COLOR_REPR,
+	COLORS,
+	RESET,
+	REV_VIDEO,
+	SGR_BEG,
+	SGR_END,
+	WEIGHT_ATTR,
+	WEIGHT_REPR,
+)
 
-FG_8_BIT_PREFIX = '38;5;'
-BG_8_BIT_PREFIX = '48;5;'
+from display_colors.cmd.effects import display_effects
+from display_colors.init    import (
+	BG_4_BIT_REPR_ATTR,
+	BG_8_BIT_REPR_ATTR,
+	FG_4_BIT_REPR_ATTR,
+	FG_8_BIT_REPR_ATTR,
+	init_display_attributes,
+	init_mappings,
+)
 
-CODE_COL_WIDTH = 8       ## Widest attr code is '22;97;7m'
+# SGR_BEG   = '\033['
+# SGR_END   = 'm'
+# RESET     = 0
+# DIM       = 2
+# MEDIUM    = 22
+# ITALIC    = 3
+# BOLD      = 1
+# REV_VIDEO = 7
+# UNDERLINE = 4
 
-FG_COLOR_4_BIT_OFFSET         = 30
-BG_COLOR_4_BIT_OFFSET         = 40
-DEFAULT_FG_COLOR_4_BIT_OFFSET = 39
-DEFAULT_BG_COLOR_4_BIT_OFFSET = 49
-BRIGHT_FG_COLOR_4_BIT_OFFSET  = 90
-BRIGHT_BG_COLOR_4_BIT_OFFSET  = 100
-FG_COLOR_8_BIT_OFFSET         = 0
-BG_COLOR_8_BIT_OFFSET         = 0
-BRIGHT_FG_COLOR_8_BIT_OFFSET  = 8
-BRIGHT_BG_COLOR_8_BIT_OFFSET  = 8
+# FG_8_BIT_PREFIX = '38;5;'
+# BG_8_BIT_PREFIX = '48;5;'
+
+# CODE_COL_WIDTH = 8       ## Widest attr code is '22;97;7m'
+
+# FG_COLOR_4_BIT_OFFSET         = 30
+# BG_COLOR_4_BIT_OFFSET         = 40
+# DEFAULT_FG_COLOR_4_BIT_OFFSET = 39
+# DEFAULT_BG_COLOR_4_BIT_OFFSET = 49
+# BRIGHT_FG_COLOR_4_BIT_OFFSET  = 90
+# BRIGHT_BG_COLOR_4_BIT_OFFSET  = 100
+# FG_COLOR_8_BIT_OFFSET         = 0
+# BG_COLOR_8_BIT_OFFSET         = 0
+# BRIGHT_FG_COLOR_8_BIT_OFFSET  = 8
+# BRIGHT_BG_COLOR_8_BIT_OFFSET  = 8
 
 _4_BIT_FG_STANDARD_OFFSET = 30
 _4_BIT_FG_BRIGHT_OFFSET   = 90
@@ -70,26 +92,26 @@ _8_BIT_GRAYSCALE_N      = _8_BIT_COLORS_N         - _8_BIT_GRAYSCALE_OFFSET
 
 _8_BIT_PALETTE_CUBE_SIDE = 6
 
-ALL_WEIGHTS = (
-	'Dim',
-	'Default',
-	'Medium',
-	'Bold',
-)
+# ALL_WEIGHTS = (
+# 	'Dim',
+# 	'Default',
+# 	'Medium',
+# 	'Bold',
+# )
 
-WEIGHT_ATTR = {
-	'Dim':     DIM,
-	'Default': RESET,
-	'Medium':  MEDIUM,
-	'Bold':    BOLD,
-}
+# WEIGHT_ATTR = {
+# 	'Dim':     DIM,
+# 	'Default': RESET,
+# 	'Medium':  MEDIUM,
+# 	'Bold':    BOLD,
+# }
 
-WEIGHT_REPR = {
-	'Dim':     'Dim',
-	'Default': 'Def',
-	'Medium':  'Med',
-	'Bold':    'Bld',
-}
+# WEIGHT_REPR = {
+# 	'Dim':     'Dim',
+# 	'Default': 'Def',
+# 	'Medium':  'Med',
+# 	'Bold':    'Bld',
+# }
 
 ALL_MISC = {
 	'Italic',
@@ -106,36 +128,36 @@ ALL_MISC = {
 	'Subscript',
 }
 
-COLORS = (
-	'black',
-	'red',
-	'green',
-	'yellow',
-	'blue',
-	'magenta',
-	'cyan',
-	'white',
-)
+# COLORS = (
+# 	'black',
+# 	'red',
+# 	'green',
+# 	'yellow',
+# 	'blue',
+# 	'magenta',
+# 	'cyan',
+# 	'white',
+# )
 
-COLOR_REPR = {
-	'default': 'df',
-	'black':   'bk',
-	'red':     're',
-	'green':   'gr',
-	'yellow':  'ye',
-	'blue':    'bl',
-	'magenta': 'ma',
-	'cyan':    'cy',
-	'white':   'wh',
-}
+# COLOR_REPR = {
+# 	'default': 'df',
+# 	'black':   'bk',
+# 	'red':     're',
+# 	'green':   'gr',
+# 	'yellow':  'ye',
+# 	'blue':    'bl',
+# 	'magenta': 'ma',
+# 	'cyan':    'cy',
+# 	'white':   'wh',
+# }
 
-Switch_Attr = namedtuple('Switch_Attr', ['on', 'off',],)
+# Switch_Attr = namedtuple('Switch_Attr', ['on', 'off',],)
 
-BG_4_BIT_REPR_ATTR  = dict()
-FG_4_BIT_REPR_ATTR  = dict()
-BG_8_BIT_REPR_ATTR  = dict()
-FG_8_BIT_REPR_ATTR  = dict()
-EFFECT_SWITCH       = dict()
+# BG_4_BIT_REPR_ATTR  = dict()
+# FG_4_BIT_REPR_ATTR  = dict()
+# BG_8_BIT_REPR_ATTR  = dict()
+# FG_8_BIT_REPR_ATTR  = dict()
+# EFFECT_SWITCH       = dict()
 
 def cat_gens(*gens: list[Generator[str, str, str]]) -> Generator[str, str, str]:
 	for gen in gens:
@@ -320,80 +342,80 @@ def display_theme(weights: list[str], reverse_video: bool, cell_txt: str, col_w:
 		except StopIteration:
 			break
 
-def color_text(attrs: str, text: str) -> str:
-	return f'{SGR_BEG}{attrs}{SGR_END}{text}'
+# def color_text(attrs: str, text: str) -> str:
+# 	return f'{SGR_BEG}{attrs}{SGR_END}{text}'
 
-def test_attributes(neutral_text: str, on_text: str, off_text: str, gutter: str) -> None:
-	l_col_w = max(len(name + ':') for name in EFFECT_SWITCH.keys())
-	for name, sw in EFFECT_SWITCH.items():
-		on_attr  = getattr(sw, 'on')
-		off_attr = getattr(sw, 'off')
-		label = name + ':'
-		print(f'{label:<{l_col_w}}', end = ' ')
-		for repr_attr in (FG_4_BIT_REPR_ATTR, BG_4_BIT_REPR_ATTR):
-			for modifier in (str.lower, str.upper):
-				for color in COLORS:
-					color_attr = repr_attr[modifier(COLOR_REPR[color])]
-					print(color_text(   color_attr,          neutral_text), end = '')
-					print(color_text(f'{color_attr};{on_attr}',   on_text), end = '')
-					print(color_text(f'{color_attr};{off_attr}', off_text), end = '')
-					print(color_text(RESET, ''), end = gutter)
-		print()
+# def test_attributes(neutral_text: str, on_text: str, off_text: str, gutter: str) -> None:
+# 	l_col_w = max(len(name + ':') for name in EFFECT_SWITCH.keys())
+# 	for name, sw in EFFECT_SWITCH.items():
+# 		on_attr  = getattr(sw, 'on')
+# 		off_attr = getattr(sw, 'off')
+# 		label = name + ':'
+# 		print(f'{label:<{l_col_w}}', end = ' ')
+# 		for repr_attr in (FG_4_BIT_REPR_ATTR, BG_4_BIT_REPR_ATTR):
+# 			for modifier in (str.lower, str.upper):
+# 				for color in COLORS:
+# 					color_attr = repr_attr[modifier(COLOR_REPR[color])]
+# 					print(color_text(   color_attr,          neutral_text), end = '')
+# 					print(color_text(f'{color_attr};{on_attr}',   on_text), end = '')
+# 					print(color_text(f'{color_attr};{off_attr}', off_text), end = '')
+# 					print(color_text(RESET, ''), end = gutter)
+# 		print()
 
-def init_display_attributes(d: dict[str, str]) -> None:
-	def init_attribute(name: str, on: str, off: str) -> None:
-		d[name] = Switch_Attr(on = on, off = off)
+# def init_display_attributes(d: dict[str, str]) -> None:
+# 	def init_attribute(name: str, on: str, off: str) -> None:
+# 		d[name] = Switch_Attr(on = on, off = off)
 
-	for name, on, off in (
-		('Italic',       '3', '23'),
-		('Dim',          '2', '22'),
-		('Medium',      '22', '22'),
-		('Bold',         '1', '21'),
-		('Rev video',    '7', '27'),
-		('Underline',    '4', '24'),
-		('2xUnderline', '21', '24'),
-		('Slow blink',   '5', '25'),
-		('Rapid blink',  '6', '25'),
-		('Conceal',      '8', '28'),
-		('Strikethru',   '9', '29'),
-		('Framed',      '51', '54'),
-		('Encircled',   '52', '54'),
-		('Overlined',   '53', '55'),
-		('Fraktur',     '20', '23'),
-		('Superscript', '73', '75'),
-		('Subscript',   '74', '75'),
-		):
-		init_attribute(name, on, off)
+# 	for name, on, off in (
+# 		('Italic',       '3', '23'),
+# 		('Dim',          '2', '22'),
+# 		('Medium',      '22', '22'),
+# 		('Bold',         '1', '21'),
+# 		('Rev video',    '7', '27'),
+# 		('Underline',    '4', '24'),
+# 		('2xUnderline', '21', '24'),
+# 		('Slow blink',   '5', '25'),
+# 		('Rapid blink',  '6', '25'),
+# 		('Conceal',      '8', '28'),
+# 		('Strikethru',   '9', '29'),
+# 		('Framed',      '51', '54'),
+# 		('Encircled',   '52', '54'),
+# 		('Overlined',   '53', '55'),
+# 		('Fraktur',     '20', '23'),
+# 		('Superscript', '73', '75'),
+# 		('Subscript',   '74', '75'),
+# 		):
+# 		init_attribute(name, on, off)
 
-def init_mappings() -> None:
-	def init_mapping(target: dict[str, str], colors: tuple[str], offset: int, modifier: Callable, prefix: str) -> None:
-		for code, color in enumerate(colors, start = offset):
-			target[modifier(COLOR_REPR[color])] = f'{prefix}{code}'
+# def init_mappings() -> None:
+# 	def init_mapping(target: dict[str, str], colors: tuple[str], offset: int, modifier: Callable, prefix: str) -> None:
+# 		for code, color in enumerate(colors, start = offset):
+# 			target[modifier(COLOR_REPR[color])] = f'{prefix}{code}'
 
-	def init_palette(target: dict[str, str], n: int, offset: int, prefix: str) -> None:
-		for code in range(offset, offset + n):
-			target[str(code)] = f'{prefix}{code}'
+# 	def init_palette(target: dict[str, str], n: int, offset: int, prefix: str) -> None:
+# 		for code in range(offset, offset + n):
+# 			target[str(code)] = f'{prefix}{code}'
 
-	for target, colors, offset, modifier, prefix in (
-		(FG_4_BIT_REPR_ATTR, COLORS,               FG_COLOR_4_BIT_OFFSET, str.lower, ''),
-		(FG_4_BIT_REPR_ATTR, ('default',), DEFAULT_FG_COLOR_4_BIT_OFFSET, str.lower, ''),
-		(FG_4_BIT_REPR_ATTR, COLORS,        BRIGHT_FG_COLOR_4_BIT_OFFSET, str.upper, ''),
-		(BG_4_BIT_REPR_ATTR, COLORS,               BG_COLOR_4_BIT_OFFSET, str.lower, ''),
-		(BG_4_BIT_REPR_ATTR, ('default',), DEFAULT_BG_COLOR_4_BIT_OFFSET, str.lower, ''),
-		(BG_4_BIT_REPR_ATTR, COLORS,        BRIGHT_BG_COLOR_4_BIT_OFFSET, str.upper, ''),
+# 	for target, colors, offset, modifier, prefix in (
+# 		(FG_4_BIT_REPR_ATTR, COLORS,               FG_COLOR_4_BIT_OFFSET, str.lower, ''),
+# 		(FG_4_BIT_REPR_ATTR, ('default',), DEFAULT_FG_COLOR_4_BIT_OFFSET, str.lower, ''),
+# 		(FG_4_BIT_REPR_ATTR, COLORS,        BRIGHT_FG_COLOR_4_BIT_OFFSET, str.upper, ''),
+# 		(BG_4_BIT_REPR_ATTR, COLORS,               BG_COLOR_4_BIT_OFFSET, str.lower, ''),
+# 		(BG_4_BIT_REPR_ATTR, ('default',), DEFAULT_BG_COLOR_4_BIT_OFFSET, str.lower, ''),
+# 		(BG_4_BIT_REPR_ATTR, COLORS,        BRIGHT_BG_COLOR_4_BIT_OFFSET, str.upper, ''),
 
-		(FG_8_BIT_REPR_ATTR, COLORS,               FG_COLOR_8_BIT_OFFSET, str.lower, FG_8_BIT_PREFIX),
-		(FG_8_BIT_REPR_ATTR, COLORS,        BRIGHT_FG_COLOR_8_BIT_OFFSET, str.upper, FG_8_BIT_PREFIX),
-		(BG_8_BIT_REPR_ATTR, COLORS,               BG_COLOR_8_BIT_OFFSET, str.lower, BG_8_BIT_PREFIX),
-		(BG_8_BIT_REPR_ATTR, COLORS,        BRIGHT_BG_COLOR_8_BIT_OFFSET, str.upper, BG_8_BIT_PREFIX),
-	):
-		init_mapping(target, colors, offset, modifier, prefix)
+# 		(FG_8_BIT_REPR_ATTR, COLORS,               FG_COLOR_8_BIT_OFFSET, str.lower, FG_8_BIT_PREFIX),
+# 		(FG_8_BIT_REPR_ATTR, COLORS,        BRIGHT_FG_COLOR_8_BIT_OFFSET, str.upper, FG_8_BIT_PREFIX),
+# 		(BG_8_BIT_REPR_ATTR, COLORS,               BG_COLOR_8_BIT_OFFSET, str.lower, BG_8_BIT_PREFIX),
+# 		(BG_8_BIT_REPR_ATTR, COLORS,        BRIGHT_BG_COLOR_8_BIT_OFFSET, str.upper, BG_8_BIT_PREFIX),
+# 	):
+# 		init_mapping(target, colors, offset, modifier, prefix)
 
-	for target, n, offset, prefix in (
-		(FG_8_BIT_REPR_ATTR, _8_BIT_COLORS_N - _8_BIT_PALETTE_OFFSET, _8_BIT_PALETTE_OFFSET, FG_8_BIT_PREFIX),
-		(BG_8_BIT_REPR_ATTR, _8_BIT_COLORS_N - _8_BIT_PALETTE_OFFSET, _8_BIT_PALETTE_OFFSET, BG_8_BIT_PREFIX),
-	):
-		init_palette(target, n, offset, prefix)
+# 	for target, n, offset, prefix in (
+# 		(FG_8_BIT_REPR_ATTR, _8_BIT_COLORS_N - _8_BIT_PALETTE_OFFSET, _8_BIT_PALETTE_OFFSET, FG_8_BIT_PREFIX),
+# 		(BG_8_BIT_REPR_ATTR, _8_BIT_COLORS_N - _8_BIT_PALETTE_OFFSET, _8_BIT_PALETTE_OFFSET, BG_8_BIT_PREFIX),
+# 	):
+# 		init_palette(target, n, offset, prefix)
 
 @click.command()
 @click.option('--8-bit',         '_8_bit',     is_flag = True, help = "Display 8-bit colors",                                          default = False, show_default = True)
@@ -410,8 +432,8 @@ def init_mappings() -> None:
 def main(_transpose: bool, _8_bit: bool, _weights: list[str], _rev_video: bool, _col_w: int, _gutter: str, _stanzas: bool, _text: str, _test: bool, _pattern: str) -> None:
 	init_mappings()
 	if _test:
-		init_display_attributes(EFFECT_SWITCH)
-		test_attributes(_pattern, _pattern, _pattern, _gutter)
+		# init_display_attributes(EFFECT_SWITCH)
+		# test_attributes(_pattern, _pattern, _pattern, _gutter)
 		exit()
 	elif _8_bit:
 		eight_bit(col_w = _col_w)
@@ -419,5 +441,13 @@ def main(_transpose: bool, _8_bit: bool, _weights: list[str], _rev_video: bool, 
 		weights = ALL_WEIGHTS if 'all' in _weights else [w.capitalize() for w in _weights]
 		display_theme(weights, _rev_video, _text, col_w = _col_w, gutter = _gutter, stanzas = _stanzas, transpose = _transpose)
 
+@click.group()
+@click.version_option(package_name = 'display-colors')
+def cli():
+	"""Prints test patterns to show the color and display effect capabilities of a terminal emulator"""
+	init_mappings()
+
+cli.add_command(display_effects)
+
 if __name__ == '__main__':
-	main()
+	cli()
