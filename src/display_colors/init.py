@@ -2,28 +2,34 @@ from collections     import namedtuple
 from typing          import Callable
 
 from display_colors.const   import (
-	_8_BIT_COLORS_N,
+	_4_BIT_BG_COLOR_OFFSET,
+	_4_BIT_BRIGHT_BG_COLOR_OFFSET,
+	_4_BIT_BRIGHT_FG_COLOR_OFFSET,
+	_4_BIT_DEFAULT_BG_COLOR_OFFSET,
+	_4_BIT_DEFAULT_FG_COLOR_OFFSET,
+	_4_BIT_FG_COLOR_OFFSET,
+
+	_8_BIT_BG_PREFIX,
+	_8_BIT_BG_COLOR_OFFSET,
+	_8_BIT_BRIGHT_BG_COLOR_OFFSET,
+	_8_BIT_BRIGHT_FG_COLOR_OFFSET,
+	_8_BIT_FG_COLOR_OFFSET,
+	_8_BIT_FG_PREFIX,
+	_8_BIT_GRAYSCALE_N,
+	_8_BIT_GRAYSCALE_OFFSET,
+	_8_BIT_PALETTE_N,
 	_8_BIT_PALETTE_OFFSET,
-	BG_8_BIT_PREFIX,
-	BG_COLOR_4_BIT_OFFSET,
-	BG_COLOR_8_BIT_OFFSET,
-	BRIGHT_BG_COLOR_4_BIT_OFFSET,
-	BRIGHT_BG_COLOR_8_BIT_OFFSET,
-	BRIGHT_FG_COLOR_4_BIT_OFFSET,
-	BRIGHT_FG_COLOR_8_BIT_OFFSET,
+	_8_BIT_STANDARD_N,
+	_8_BIT_STANDARD_OFFSET,
+
 	COLORS,
 	COLOR_REPR,
-	DEFAULT_BG_COLOR_4_BIT_OFFSET,
-	DEFAULT_FG_COLOR_4_BIT_OFFSET,
-	FG_8_BIT_PREFIX,
-	FG_COLOR_4_BIT_OFFSET,
-	FG_COLOR_8_BIT_OFFSET,
 )
 
-BG_4_BIT_REPR_ATTR  = dict()
-FG_4_BIT_REPR_ATTR  = dict()
-BG_8_BIT_REPR_ATTR  = dict()
-FG_8_BIT_REPR_ATTR  = dict()
+_4_BIT_BG_REPR_ATTR  = dict()
+_4_BIT_FG_REPR_ATTR  = dict()
+_8_BIT_BG_REPR_ATTR  = dict()
+_8_BIT_FG_REPR_ATTR  = dict()
 
 Switch_Attr = namedtuple('Switch_Attr', ['on', 'off',],)
 
@@ -62,23 +68,27 @@ def init_mappings() -> None:
 			target[str(code)] = f'{prefix}{code}'
 
 	for target, colors, offset, modifier, prefix in (
-		(FG_4_BIT_REPR_ATTR, COLORS,               FG_COLOR_4_BIT_OFFSET, str.lower, ''),
-		(FG_4_BIT_REPR_ATTR, ('default',), DEFAULT_FG_COLOR_4_BIT_OFFSET, str.lower, ''),
-		(FG_4_BIT_REPR_ATTR, COLORS,        BRIGHT_FG_COLOR_4_BIT_OFFSET, str.upper, ''),
-		(BG_4_BIT_REPR_ATTR, COLORS,               BG_COLOR_4_BIT_OFFSET, str.lower, ''),
-		(BG_4_BIT_REPR_ATTR, ('default',), DEFAULT_BG_COLOR_4_BIT_OFFSET, str.lower, ''),
-		(BG_4_BIT_REPR_ATTR, COLORS,        BRIGHT_BG_COLOR_4_BIT_OFFSET, str.upper, ''),
+		(_4_BIT_FG_REPR_ATTR, COLORS,               _4_BIT_FG_COLOR_OFFSET, str.lower, ''),
+		(_4_BIT_FG_REPR_ATTR, ('default',), _4_BIT_DEFAULT_FG_COLOR_OFFSET, str.lower, ''),
+		(_4_BIT_FG_REPR_ATTR, COLORS,        _4_BIT_BRIGHT_FG_COLOR_OFFSET, str.upper, ''),
+		(_4_BIT_BG_REPR_ATTR, COLORS,               _4_BIT_BG_COLOR_OFFSET, str.lower, ''),
+		(_4_BIT_BG_REPR_ATTR, ('default',), _4_BIT_DEFAULT_BG_COLOR_OFFSET, str.lower, ''),
+		(_4_BIT_BG_REPR_ATTR, COLORS,        _4_BIT_BRIGHT_BG_COLOR_OFFSET, str.upper, ''),
 
-		(FG_8_BIT_REPR_ATTR, COLORS,               FG_COLOR_8_BIT_OFFSET, str.lower, FG_8_BIT_PREFIX),
-		(FG_8_BIT_REPR_ATTR, COLORS,        BRIGHT_FG_COLOR_8_BIT_OFFSET, str.upper, FG_8_BIT_PREFIX),
-		(BG_8_BIT_REPR_ATTR, COLORS,               BG_COLOR_8_BIT_OFFSET, str.lower, BG_8_BIT_PREFIX),
-		(BG_8_BIT_REPR_ATTR, COLORS,        BRIGHT_BG_COLOR_8_BIT_OFFSET, str.upper, BG_8_BIT_PREFIX),
+		(_8_BIT_FG_REPR_ATTR, COLORS,               _8_BIT_FG_COLOR_OFFSET, str.lower, _8_BIT_FG_PREFIX),
+		(_8_BIT_FG_REPR_ATTR, COLORS,        _8_BIT_BRIGHT_FG_COLOR_OFFSET, str.upper, _8_BIT_FG_PREFIX),
+		(_8_BIT_BG_REPR_ATTR, COLORS,               _8_BIT_BG_COLOR_OFFSET, str.lower, _8_BIT_BG_PREFIX),
+		(_8_BIT_BG_REPR_ATTR, COLORS,        _8_BIT_BRIGHT_BG_COLOR_OFFSET, str.upper, _8_BIT_BG_PREFIX),
 	):
 		init_mapping(target, colors, offset, modifier, prefix)
 
 	for target, n, offset, prefix in (
-		(FG_8_BIT_REPR_ATTR, _8_BIT_COLORS_N - _8_BIT_PALETTE_OFFSET, _8_BIT_PALETTE_OFFSET, FG_8_BIT_PREFIX),
-		(BG_8_BIT_REPR_ATTR, _8_BIT_COLORS_N - _8_BIT_PALETTE_OFFSET, _8_BIT_PALETTE_OFFSET, BG_8_BIT_PREFIX),
+		(_8_BIT_BG_REPR_ATTR, _8_BIT_STANDARD_N,  _8_BIT_STANDARD_OFFSET,  _8_BIT_BG_PREFIX),
+		(_8_BIT_BG_REPR_ATTR, _8_BIT_PALETTE_N,   _8_BIT_PALETTE_OFFSET,   _8_BIT_BG_PREFIX),
+		(_8_BIT_BG_REPR_ATTR, _8_BIT_GRAYSCALE_N, _8_BIT_GRAYSCALE_OFFSET, _8_BIT_BG_PREFIX),
+		(_8_BIT_FG_REPR_ATTR, _8_BIT_STANDARD_N,  _8_BIT_STANDARD_OFFSET,  _8_BIT_FG_PREFIX),
+		(_8_BIT_FG_REPR_ATTR, _8_BIT_PALETTE_N,   _8_BIT_PALETTE_OFFSET,   _8_BIT_FG_PREFIX),
+		(_8_BIT_FG_REPR_ATTR, _8_BIT_GRAYSCALE_N, _8_BIT_GRAYSCALE_OFFSET, _8_BIT_FG_PREFIX),
 	):
 		init_palette(target, n, offset, prefix)
 

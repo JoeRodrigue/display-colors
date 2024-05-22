@@ -31,8 +31,12 @@ rm -rf .venv                 // Destroy .venv
 ### Use
 
 ```
-(.venv) display-colors [OPTIONS]
+(.venv) display-colors [--help|--version] COMMAND [OPTIONS]
 ```
+
+COMMAND: 4-bit | 8-bit | effects
+
+OPTIONS vary depending on the command; do `display-colors COMMAND --help` to list them
 
 ## Features
 
@@ -44,9 +48,9 @@ The program has four modes:
  - 4-bit -- A color palette in the traditional format, one background color per column (*qv* [iTerm2 Color Schemes](https://iterm2colorschemes.com/))
  - 4-bit transpose -- A palette with one foreground color per column
  - 8-bit -- A palette of background colors, including the standard 16 and grayscale (*qv* [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit))
- - Test -- A test pattern of terminal effects
+ - effects -- A test pattern of terminal effects
 
-### 4-bit mode (default)
+### 4-bit mode (`display-colors 4-bit`)
 
 Options:
 
@@ -61,7 +65,7 @@ This format lists background colors one per column with their SGR codes at top a
 
 Each row is labeled on the left with its weight.  If the row is reverse video, the weight label will appear in reverse video.
 
-### 4-bit transpose (`--transpose`)
+### 4-bit transpose mode (`display-colors 4-bit --transpose`)
 
 Options:
 
@@ -72,7 +76,7 @@ Options:
 
 This format lists foreground colors one per column, with the default foreground color in the leftmost column and the default background color in the topmost rows.  The SGR codes are not shown and the sample text is of the form fg/bg.
 
-### 8-bit
+### 8-bit mode (`display-colors 8-bit`)
 
 This has three parts:
 
@@ -90,7 +94,7 @@ The 216 RGB colors are arranged in a 6x6 cube, displayed in 6 slices with the or
 
 From these slices you can see that the darker cells occupy the top half of the cube, the greens the back lower left corner, the reds the front upper left corner and the blues the back upper right corner.
 
-### Test mode (`--test`)
+### Effects mode (`display-colors effects`)
 
 Options:
 
@@ -135,17 +139,17 @@ The display uses abbreviations for the colors, as follows:
 
 Traditional 4-bit palette, including all font weights, with reverse-video rows, divided into stanzas by color:
 ```bash
-display-colors --weight all --reverse-video --stanzas
+display-colors 4-bit --weight all --reverse-video --stanzas
 ```
 4-bit palette with one column per foreground color, rows ordered 'dim, medium, bold, medium' and spaces between the columns:
 ```bash
-display-colors --transpose -w dim -w medium -w bold -w medium --gutter ' '
+display-colors 4-bit --transpose -w dim -w medium -w bold -w medium --gutter ' '
 ```
 8-bit display including standard and bright colors, 216-color RGB palette and grayscale background colors:
 ```bash
-display-colors --8-bit
+display-colors 8-bit
 ```
 Terminal effect test pattern with spaces between the columns:
 ```bash
-display-colors --test --gutter ' '
+display-colors effects --gutter ' '
 ```

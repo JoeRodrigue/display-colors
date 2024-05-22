@@ -7,12 +7,9 @@ from display_colors.const   import (
 	SGR_BEG,
 	SGR_END,
 )
-
 from display_colors.init    import (
-	BG_4_BIT_REPR_ATTR,
-	BG_8_BIT_REPR_ATTR,
-	FG_4_BIT_REPR_ATTR,
-	FG_8_BIT_REPR_ATTR,
+	_4_BIT_BG_REPR_ATTR,
+	_4_BIT_FG_REPR_ATTR,
 	init_display_attributes,
 )
 
@@ -28,7 +25,7 @@ def test_attributes(neutral_text: str, on_text: str, off_text: str, gutter: str)
 		off_attr = getattr(sw, 'off')
 		label = name + ':'
 		print(f'{label:<{l_col_w}}', end = ' ')
-		for repr_attr in (FG_4_BIT_REPR_ATTR, BG_4_BIT_REPR_ATTR):
+		for repr_attr in (_4_BIT_FG_REPR_ATTR, _4_BIT_BG_REPR_ATTR):
 			for modifier in (str.lower, str.upper):
 				for color in COLORS:
 					color_attr = repr_attr[modifier(COLOR_REPR[color])]
@@ -42,6 +39,6 @@ def test_attributes(neutral_text: str, on_text: str, off_text: str, gutter: str)
 @click.option('--gutter',        '_gutter',       type = str,  help = "String delimiting output columns  [default: empty string]",     default = '',    show_default = True)
 @click.option('--pattern',       '_pattern',      type = str,  help = "Sample pattern character for the --test option",                default = '|',   show_default = True)
 def display_effects(_gutter: str, _pattern: str):
-	"""Display the different effects the terminal emulator supports"""
+	"""Complete display of effects the terminal emulator may support"""
 	init_display_attributes(EFFECT_SWITCH)
 	test_attributes(_pattern, _pattern, _pattern, _gutter)
