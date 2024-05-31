@@ -31,7 +31,7 @@ rm -rf .venv                 // Destroy .venv
 ### Use
 
 ```
-(.venv) display-colors [--help|--version] COMMAND [OPTIONS]
+(.venv) display-colors [--help | --version] COMMAND [OPTIONS]
 ```
 
 COMMAND: 4-bit | 8-bit | effects
