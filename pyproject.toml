@@ -1,6 +1,6 @@
 [tool.poetry]
 name          = "display-colors"
-version       = "1.0.4"
+version       = "1.0.5"
 description   = "Shows the 4-bit color and display effect capabilities of a terminal emulator"
 license       = "Apache-2.0"
 authors       = ["Joe Rodrigue <joe.rodrigue@gmail.com>"]
