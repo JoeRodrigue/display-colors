@@ -1,12 +1,16 @@
 [tool.poetry]
-name = "display-colors"
-version = "1.0.4"
-description = "Shows the 4-bit color and display effect capabilities of a terminal emulator"
-authors     = ["Joe Rodrigue <joe.rodrigue@gmail.com>"]
-maintainers = ["Joe Rodrigue <joe.rodrigue@gmail.com>"]
-repository  = "https://github.com/JoeRodrigue/display-colors"
-readme      = "README.md"
-classifiers = [
+name          = "display-colors"
+version       = "1.0.4"
+description   = "Shows the 4-bit color and display effect capabilities of a terminal emulator"
+license       = "Apache-2.0"
+authors       = ["Joe Rodrigue <joe.rodrigue@gmail.com>"]
+maintainers   = ["Joe Rodrigue <joe.rodrigue@gmail.com>"]
+readme        = "README.md"
+homepage      = "https://github.com/JoeRodrigue/display-colors"
+repository    = "https://github.com/JoeRodrigue/display-colors"
+documentation = "https://github.com/JoeRodrigue/display-colors"
+keywords      = ['color', 'terminal', 'emulator', 'SGR', 'ECMA-48']
+classifiers   = [
 	"License :: OSI Approved :: Apache Software License",
 	"Operating System :: OS Independent",
 	"Programming Language :: Python :: 3.7",
@@ -16,16 +20,15 @@ classifiers = [
 	"Programming Language :: Python :: 3.11",
 	"Programming Language :: Python :: 3.12",
 ]
-keywords = ['color', 'terminal', 'emulator', 'SGR', 'ECMA-48']
-packages = [{include = "display_colors", from = "src"}]
+packages      = [{include = "display_colors", from = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-click = "^8.1.7"
+click  = "^8.1.7"
 
 [tool.poetry.scripts]
-	display-colors = 'display_colors.__main__:cli'
+display-colors = 'display_colors.__main__:cli'
 
 [build-system]
-requires = ["poetry-core"]
+requires      = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
