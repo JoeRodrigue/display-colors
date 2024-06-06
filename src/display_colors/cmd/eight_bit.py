@@ -1,6 +1,6 @@
 import click
-from collections     import namedtuple
-from functools       import partial
+from functools import partial
+from typing    import Callable, NamedTuple
 
 from display_colors.cell  import (
 	cell_text,
@@ -16,24 +16,28 @@ from display_colors.const import (
 	COLOR_REPR,
 	COLORS,
 )
-from display_colors.init import (
+from display_colors.init  import (
 	_4_BIT_BG_REPR_ATTR,
 	_4_BIT_FG_REPR_ATTR,
 	_8_BIT_BG_REPR_ATTR,
 	_8_BIT_FG_REPR_ATTR,
 )
-from display_colors.math import (
+from display_colors.math  import (
 	base_n_10,
 )
 
-Point = namedtuple('Point', ['x', 'y', 'z'])
+class Point(NamedTuple):
+	"""Store a point in a three-dimensional cuboid"""
+	x: int
+	y: int
+	z: int
 
-def p_disc_fgattr(p: Point, discriminant: callable, _4_bit = False) -> str:
+def p_disc_fgattr(p: Point, discriminant: Callable, _4_bit = False) -> str:
 	(color, modifier) = ('black', str.lower) if discriminant(p) else ('white', str.upper)
 	repr = modifier(COLOR_REPR[color])
 	return _4_BIT_FG_REPR_ATTR[repr]if _4_bit else _8_BIT_FG_REPR_ATTR[repr]
 
-def p_code_bgattr(p: Point, p_code: callable, _4_bit = False) -> str:
+def p_code_bgattr(p: Point, p_code: Callable, _4_bit = False) -> str:
 	if _4_bit:
 		code     = p_code(p) - _8_BIT_STANDARD_OFFSET
 		color    = COLORS[code % len(COLORS)]
@@ -42,11 +46,11 @@ def p_code_bgattr(p: Point, p_code: callable, _4_bit = False) -> str:
 		return _4_BIT_BG_REPR_ATTR[repr]
 	return _8_BIT_BG_REPR_ATTR[str(p_code(p))]
 
-def p_code_text(p: Point, p_code: callable, decimal: bool) -> str:
+def p_code_text(p: Point, p_code: Callable, decimal: bool) -> str:
 	fmt_spec = 'd' if decimal else 'X'
 	return f'{p_code(p):{fmt_spec}}'
 
-def display_standard(p_code: callable, cell_w: int, decimal: bool) -> None:
+def display_standard(p_code: Callable, cell_w: int, decimal: bool) -> None:
 	def discriminant(p: Point) -> bool:
 		delta = p_code(p) - _8_BIT_STANDARD_OFFSET
 		return bool((delta // (_8_BIT_STANDARD_N / 2)) % 2)
@@ -65,7 +69,7 @@ def display_standard(p_code: callable, cell_w: int, decimal: bool) -> None:
 								partial(p_code_text,   p_code       = p_code, decimal = decimal),
 								cell_w)
 
-def display_rgb_palette(p_code: callable, cell_w: int, decimal: bool) -> None:
+def display_rgb_palette(p_code: Callable, cell_w: int, decimal: bool) -> None:
 	def discriminant(p: Point) -> bool:
 		delta = p_code(p) - _8_BIT_PALETTE_OFFSET
 		return bool((delta // (_8_BIT_PALETTE_CUBE_SIDE * _8_BIT_PALETTE_CUBE_SIDE / 2)) % 2)
@@ -77,7 +81,7 @@ def display_rgb_palette(p_code: callable, cell_w: int, decimal: bool) -> None:
 								partial(p_code_text,   p_code       = p_code, decimal = decimal),
 								cell_w)
 
-def display_grayscale(p_code: callable, cell_w: int, decimal: bool) -> None:
+def display_grayscale(p_code: Callable, cell_w: int, decimal: bool) -> None:
 	def discriminant(p: Point) -> bool:
 		delta = p_code(p) - _8_BIT_GRAYSCALE_OFFSET
 		return bool((delta // (_8_BIT_GRAYSCALE_N / 2)) % 2)
@@ -89,7 +93,7 @@ def display_grayscale(p_code: callable, cell_w: int, decimal: bool) -> None:
 								partial(p_code_text,   p_code       = p_code, decimal = decimal),
 								cell_w)
 
-def display_cuboid(dimensions: Point, p_fgattr: callable, p_bgattr: callable, f_text: callable, cell_w: int) -> None:
+def display_cuboid(dimensions: Point, p_fgattr: Callable, p_bgattr: Callable, f_text: Callable, cell_w: int) -> None:
 	for y in range(dimensions.y):
 		for z in range(dimensions.z):
 			for x in range(dimensions.x):

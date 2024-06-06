@@ -1,7 +1,6 @@
-from collections     import namedtuple
-from typing          import Callable
+from typing import Callable
 
-from display_colors.const   import (
+from display_colors.const import (
 	_4_BIT_BG_COLOR_OFFSET,
 	_4_BIT_BRIGHT_BG_COLOR_OFFSET,
 	_4_BIT_BRIGHT_FG_COLOR_OFFSET,
@@ -24,16 +23,15 @@ from display_colors.const   import (
 
 	COLORS,
 	COLOR_REPR,
+	Switch_Attr,
 )
 
-_4_BIT_BG_REPR_ATTR  = dict()
-_4_BIT_FG_REPR_ATTR  = dict()
-_8_BIT_BG_REPR_ATTR  = dict()
-_8_BIT_FG_REPR_ATTR  = dict()
+_4_BIT_BG_REPR_ATTR: dict[str, str] = dict()
+_4_BIT_FG_REPR_ATTR: dict[str, str] = dict()
+_8_BIT_BG_REPR_ATTR: dict[str, str] = dict()
+_8_BIT_FG_REPR_ATTR: dict[str, str] = dict()
 
-Switch_Attr = namedtuple('Switch_Attr', ['on', 'off',],)
-
-def init_display_attributes(d: dict[str, str]) -> None:
+def init_display_attributes(d: dict[str, Switch_Attr]) -> None:
 	def init_attribute(name: str, on: str, off: str) -> None:
 		d[name] = Switch_Attr(on = on, off = off)
 
@@ -59,7 +57,7 @@ def init_display_attributes(d: dict[str, str]) -> None:
 		init_attribute(name, on, off)
 
 def init_mappings() -> None:
-	def init_mapping(target: dict[str, str], colors: tuple[str], offset: int, modifier: Callable, prefix: str) -> None:
+	def init_mapping(target: dict[str, str], colors: tuple[str, ...], offset: int, modifier: Callable, prefix: str) -> None:
 		for code, color in enumerate(colors, start = offset):
 			target[modifier(COLOR_REPR[color])] = f'{prefix}{code}'
 

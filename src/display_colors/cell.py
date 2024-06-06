@@ -12,7 +12,7 @@ from display_colors.init import (
 	_8_BIT_FG_REPR_ATTR,
 )
 
-def colored_cell(attrs: int, text: str) -> str:
+def colored_cell(attrs: str, text: str) -> str:
 	return f'{SGR_BEG}{attrs}{SGR_END}{text}{SGR_BEG}{RESET}{SGR_END}'
 
 def create_attrs(weight: str, fg_repr: str, bg_repr: str, rev_video: bool = False, _8_bit: bool = False) -> str:

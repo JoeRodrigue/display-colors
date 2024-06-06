@@ -1,12 +1,14 @@
+from typing import NamedTuple
+
 SGR_BEG   = '\033['
 SGR_END   = 'm'
-RESET     = 0
-DIM       = 2
-MEDIUM    = 22
-ITALIC    = 3
-BOLD      = 1
-REV_VIDEO = 7
-UNDERLINE = 4
+RESET     = '0'
+DIM       = '2'
+MEDIUM    = '22'
+ITALIC    = '3'
+BOLD      = '1'
+REV_VIDEO = '7'
+UNDERLINE = '4'
 
 _8_BIT_FG_PREFIX = '38;5;'
 _8_BIT_BG_PREFIX = '48;5;'
@@ -80,3 +82,8 @@ WEIGHT_REPR = {
 	'Medium':  'Med',
 	'Bold':    'Bld',
 }
+
+class Switch_Attr(NamedTuple):
+	"""Store attributes that switch a property on and off"""
+	on:  str
+	off: str

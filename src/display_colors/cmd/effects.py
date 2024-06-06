@@ -6,6 +6,7 @@ from display_colors.const   import (
 	RESET,
 	SGR_BEG,
 	SGR_END,
+	Switch_Attr,
 )
 from display_colors.init    import (
 	_4_BIT_BG_REPR_ATTR,
@@ -13,7 +14,7 @@ from display_colors.init    import (
 	init_display_attributes,
 )
 
-EFFECT_SWITCH = dict()
+EFFECT_SWITCH: dict[str, Switch_Attr] = dict()
 
 def color_text(attrs: str, text: str) -> str:
 	return f'{SGR_BEG}{attrs}{SGR_END}{text}'

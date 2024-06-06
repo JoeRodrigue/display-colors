@@ -1,5 +1,5 @@
 import click
-from collections.abc import Generator
+from collections.abc import Iterable, Iterator
 
 from display_colors.cell import (
 	cell_text,
@@ -31,7 +31,7 @@ def fg_attr_repr(weight: str, fg_repr: str, rev_video: bool, cell_w: int) -> str
 	str     = f'{WEIGHT_ATTR[weight]};{_4_BIT_FG_REPR_ATTR[fg_repr]}{rv_attr}m'
 	return f'{str:>{cell_w}}'
 
-def fg_col_gen(weights: list[str], reverse_video: bool, stanzas: bool) -> Generator[str, str, str]:
+def fg_col_gen(weights: Iterable[str], reverse_video: bool, stanzas: bool) -> Iterator[str]:
 	col_w = len(COLOR_REPR['default'])
 	yield blank_cell(col_w)
 	prefix = f''
@@ -49,7 +49,7 @@ def fg_col_gen(weights: list[str], reverse_video: bool, stanzas: bool) -> Genera
 				new_stanza = False
 		prefix = f'\n' if stanzas else f''
 
-def weight_col_gen(weights: list[str], reverse_video: bool, header: bool = False) -> Generator[str, str, str]:
+def weight_col_gen(weights: Iterable[str], reverse_video: bool, header: bool = False) -> Iterator[str]:
 	if header:
 		yield blank_cell(len(WEIGHT_REPR['Default']))
 	for _ in cat_gens(map(lambda color: COLOR_REPR[color].lower(), ('default',)),
@@ -62,7 +62,7 @@ def weight_col_gen(weights: list[str], reverse_video: bool, header: bool = False
 				text  = f'{WEIGHT_REPR[weight]}'
 				yield colored_cell(attrs, text)
 
-def code_col_gen(weights: list[str], reverse_video: bool, col_w: int) -> Generator[str, str, str]:
+def code_col_gen(weights: Iterable[str], reverse_video: bool, col_w: int) -> Iterator[str]:
 	yield blank_cell(col_w)
 	for fg_repr in cat_gens(map(lambda color: COLOR_REPR[color].lower(), ('default',)),
 												  map(lambda color: COLOR_REPR[color].lower(), COLORS),
@@ -74,7 +74,7 @@ def code_col_gen(weights: list[str], reverse_video: bool, col_w: int) -> Generat
 				text  = fg_attr_repr(weight, fg_repr, rev_video, col_w)
 				yield colored_cell(attrs, text)
 
-def column_gen(bg_repr: str, weights: list[str], reverse_video: bool, cell_txt: str, col_w: int, transpose: bool) -> Generator[str, str, str]:
+def column_gen(bg_repr: str, weights: Iterable[str], reverse_video: bool, cell_txt: str, col_w: int, transpose: bool) -> Iterator[str]:
 	if not transpose:
 		attrs = create_attrs('Default', 'df', 'df')
 		text  = cell_text(text = f'{_4_BIT_BG_REPR_ATTR[bg_repr]}m', cell_w = col_w)
@@ -90,7 +90,7 @@ def column_gen(bg_repr: str, weights: list[str], reverse_video: bool, cell_txt: 
 				text  = cell_text(fg_repr = fg, bg_repr = bg, text = cell_txt, transpose = transpose, cell_w = col_w)
 				yield colored_cell(attrs, text)
 
-def display_theme(weights: list[str], reverse_video: bool, cell_txt: str, col_w: int, gutter: str, stanzas: bool, transpose: bool) -> None:
+def display_theme(weights: Iterable[str], reverse_video: bool, cell_txt: str, col_w: int, gutter: str, stanzas: bool, transpose: bool) -> None:
 	headers = [
 		weight_col_gen(weights, reverse_video),
 	] if transpose else [
